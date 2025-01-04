@@ -1,0 +1,41 @@
+{
+  "draftName": "commysh demo draft",
+  "teamCount": 10,
+  "pickTimerLength": 60,
+  "rosterSettings": {
+    "positions": {
+      "qb": 1,
+      "rb": 2,
+      "wr": 2,
+      "te": 1,
+      "flex": 1,
+      "k": 1,
+      "def": 1,
+      "bench": 6
+    },
+    "totalRosterCount": 15
+  },
+  "teams": [
+    {"name": "Team 1",
+    "draftPosition": 1
+    },
+    {"name": "Team 2",
+    "draftPosition": 2},
+    {"name": "Team 3",
+    "draftPosition": 3},
+    {"name": "Team 4",
+    "draftPosition": 4},
+    {"name": "Team 5",
+    "draftPosition": 5},
+    {"name": "Team 6",
+    "draftPosition": 6},
+    {"name": "Team 7",
+    "draftPosition": 7},
+    {"name": "Team 8",
+    "draftPosition": 8},
+    {"name": "Team 9",
+    "draftPosition": 9},
+    {"name": "Team 10",
+    "draftPosition": 10}
+  ]
+}
