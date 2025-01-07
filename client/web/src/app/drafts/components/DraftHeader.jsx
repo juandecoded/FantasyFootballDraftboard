@@ -1,12 +1,19 @@
-import { Avatar, Box, Flex, Heading, Text } from '@/components/ui';
+import { Box, Flex, Heading, Text } from '@/components/ui';
 import { PickTimer } from './PickTimer';
 import { LastPlayerPickedCard } from './LastPlayerPickedCard';
 import PropTypes from 'prop-types';
 
-const DraftingInfo = ({ currentlyDrafting, currentTeam, draftStatus }) => {
+const DraftingInfo = ({ currentlyDrafting, currentTeam, prevTeam, draftStatus, teams}) => {
     if (!currentlyDrafting || !currentTeam) {
         return null;
     }
+
+    // Helper function to format the pick number
+    const formatPickNumber = (pickNumber) => {
+        const suffixes = ["th", "st", "nd", "rd"];
+        const v = pickNumber % 100;
+        return pickNumber + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+      };
 
     if (draftStatus === 'preDraft') {
         return (
@@ -18,12 +25,13 @@ const DraftingInfo = ({ currentlyDrafting, currentTeam, draftStatus }) => {
     } else if (draftStatus === 'paused') {
         return <Heading size='2' style={{ color: 'orange' }}>Draft is paused</Heading>;
     } else {
+        const prevTeamName = prevTeam ? teams[prevTeam].teamName : 'Unknown Team';
         return (
             <Flex direction='column' align='center' style={{ width: '250px' }}>
                 {currentlyDrafting.lastPlayerPicked ? (
                     <>
                         <Heading size='2' style={{ color: 'orange' }}>
-                            With the {currentlyDrafting.overallPickNumber} pick, {currentTeam ? currentTeam.teamName : 'Unknown Team'} selects:
+                            With the {formatPickNumber(currentlyDrafting.overallPickNumber - 1)} pick, {prevTeamName} selects:
                         </Heading>
                         <LastPlayerPickedCard playerId={currentlyDrafting.lastPlayerPicked} />
                     </>
@@ -52,7 +60,6 @@ const DraftStatus = ({ currentlyDrafting }) => (
 const DraftQueue = ({ draftQueue }) => (
     <Flex direction='column' gap='1'>
         <Flex gap='4'>
-            <Avatar />
             <Heading size='7'>{draftQueue.currentTeamName}</Heading>
         </Flex>
         <Flex gap='3'>
@@ -72,7 +79,7 @@ const DraftQueue = ({ draftQueue }) => (
     </Flex>
 );
 
-export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams }) => {
+export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams, prevTeam }) => {
     const currentTeam = teams[currentlyDrafting.teamId];
 
     if (!currentlyDrafting || !currentTeam || !draftQueue) {
@@ -95,6 +102,8 @@ export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams 
                 currentlyDrafting={currentlyDrafting}
                 currentTeam={currentTeam}
                 draftStatus={draftStatus}
+                prevTeam={prevTeam}
+                teams={teams}
             />
             <Flex gap='4'>
                 <Box>

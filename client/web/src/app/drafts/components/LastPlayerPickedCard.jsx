@@ -40,36 +40,20 @@ export const LastPlayerPickedCard = ({ playerId }) => {
         paddingRight: '.5rem',
       }}
     >
-        {/* <Flex 
-            style={{
-                width: '100%',
-                // justifyContent: 'space-around',
-                alignContent: 'center',
-                flexGrow: 1,
-            }}
-        > */}
-            <Avatar
-                src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?&w=256&h=256&q=70&crop=focalpoint&fp-x=0.5&fp-y=0.3&fp-z=1&fit=crop"
-                // fallback={draftOrder[team].teamPic}
-                radius='none'
-                size='6'
-                // height='100%'
-            />
-            <Flex style={{display: 'flex', flexDirection: 'column', alignItems: 'center', paddingLeft: '2.5rem'}}>
-                <Text size='2'>{firstName}</Text>
-                <Heading size='7'
-                    style={{
-                        textOverflow: 'ellipsis',
-                        // overflow:'',
-                        whiteSpace: 'wrap'
-                    }}
-                >
-                {lastName}
-                </Heading>
-                <Text size='2'>
-                    {`${position} - ${proTeam.toUpperCase()}`}</Text>
-            </Flex>
-        {/* </Flex> */}
+      <Flex style={{display: 'flex', flexDirection: 'column', alignItems: 'center', paddingLeft: '2.5rem'}}>
+          <Text size='2'>{firstName}</Text>
+          <Heading size='7'
+              style={{
+                  textOverflow: 'ellipsis',
+                  // overflow:'',
+                  whiteSpace: 'wrap'
+              }}
+          >
+          {lastName}
+          </Heading>
+          <Text size='2'>
+              {`${position} - ${proTeam.toUpperCase()}`}</Text>
+      </Flex>
             
     </Card>
   );

@@ -1,23 +1,25 @@
-import { useDraft } from '@/hooks/useDraft';
+import { useDraft } from '@/app/drafts/hooks/useDraft';
 import { DraftBoardGrid } from '../DraftBoardGrid';
 import { Button, Flex } from '@/components/ui';
 import { DraftBoardGridHeader } from './DraftBoardGridHeader';
 import { Header } from './Header';
-import { DraftHeader } from '../../components/DraftHeader';
+import { DraftHeader } from '../../components/DraftHeader'; 
 import { Players } from '../../components/Players';
 
 export const DraftBoard = ({ draftData }) => {
   const {
     draftStatus,
+    setDraftStatus,
     currentlyDrafting,
     draftQueue,
     showPlayersPanel,
     playersData,
     teams,
     draftResults,
+    prevTeam,
     togglePlayersPanel,
     handleDraftPlayer,
-  } = useDraftLogic(draftData);
+  } = useDraft(draftData);
 
   if (!draftData) {
     return (
@@ -35,6 +37,7 @@ export const DraftBoard = ({ draftData }) => {
         currentlyDrafting={currentlyDrafting}
         draftQueue={draftQueue}
         teams={teams}
+        prevTeam={prevTeam}
       />
       <Flex direction="column" gap="1">
         <DraftBoardGridHeader draftData={draftData} />

@@ -1,8 +1,7 @@
-// hooks/useDraftLogic.js
 import { useState, useEffect } from 'react';
 import { api } from '@/utils/api';
 
-export const useDraftLogic = (draftData) => {
+export const useDraft = (draftData) => {
   const { draftStatus: initialDraftStatus, draftOrder, rosterSettings, teamsArr } = draftData;
   const [draftStatus, setDraftStatus] = useState(initialDraftStatus);
   const [currentlyDrafting, setCurrentlyDrafting] = useState(draftData.currentlyDrafting);
@@ -11,6 +10,7 @@ export const useDraftLogic = (draftData) => {
   const [playersData, setPlayersData] = useState([]);
   const [teams, setTeams] = useState(draftData.teams);
   const [draftResults, setDraftResults] = useState(draftData.results);
+  const [prevTeam, setPrevTeam] = useState(null);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -123,6 +123,8 @@ export const useDraftLogic = (draftData) => {
 
         const nextTeamId = getNextTeamId(nextPick, nextRound);
 
+        setPrevTeam(currentlyDrafting.teamId);
+
         setCurrentlyDrafting({
           teamId: nextTeamId,
           lastPlayerPicked: playerId,
@@ -164,12 +166,14 @@ export const useDraftLogic = (draftData) => {
 
   return {
     draftStatus,
+    setDraftStatus,
     currentlyDrafting,
     draftQueue,
     showPlayersPanel,
     playersData,
     teams,
     draftResults,
+    prevTeam,
     togglePlayersPanel,
     handleDraftPlayer,
   };
