@@ -79,7 +79,7 @@ const DraftQueue = ({ draftQueue }) => (
     </Flex>
 );
 
-export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams, prevTeam, lastPlayerPicked }) => {
+export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams, prevTeam, lastPlayerPicked, pickTimerLength, onTimerEnd }) => {
     const currentTeam = teams[currentlyDrafting.teamId];
 
     if (!currentlyDrafting || !currentTeam || !draftQueue) {
@@ -114,7 +114,7 @@ export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams,
             </Flex>
             <Flex>
                 <Box>
-                    <PickTimer draftStatus={draftStatus} currentlyDrafting={currentlyDrafting} />
+                    <PickTimer draftStatus={draftStatus} currentlyDrafting={currentlyDrafting} pickTimerLength={pickTimerLength} onTimerEnd={onTimerEnd} />
                 </Box>
             </Flex>
         </Flex>
@@ -139,6 +139,10 @@ DraftHeader.propTypes = {
     draftQueue: PropTypes.object.isRequired,
     draftStatus: PropTypes.string.isRequired,
     teams: PropTypes.object.isRequired,
+    prevTeam: PropTypes.string.isRequired,
+    lastPlayerPicked: PropTypes.object.isRequired,
+    onTimerEnd: PropTypes.func.isRequired,
+    pickTimerLength: PropTypes.number.isRequired,
 };
 
 DraftQueue.propTypes = {

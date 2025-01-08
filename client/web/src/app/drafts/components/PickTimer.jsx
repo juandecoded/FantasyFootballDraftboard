@@ -1,59 +1,50 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Box, Flex, Heading } from '@/components/ui';
 import PropTypes from 'prop-types';
 
-export const PickTimer = ({ draftStatus, currentlyDrafting}) => {
-
+export const PickTimer = ({ draftStatus, currentlyDrafting, pickTimerLength, onTimerEnd }) => {
     const draftSettings = useMemo(() => ({
-        pickTimerLength: 20,
-        onTimerEnd: () => console.log('timer ended,'), // autodraft
+        pickTimerLength,
     }), []);
 
     const [timeRemaining, setTimeRemaining] = useState(draftSettings.pickTimerLength);
     const [isRunning, setIsRunning] = useState(false);
-    const [prevDrafterId, setPrevDrafterId] = useState(currentlyDrafting.teamId);
+    const intervalRef = useRef(null);
+    const prevDrafterIdRef = useRef(currentlyDrafting.teamId);
 
     useEffect(() => {
-
-        let interval;
-
         if (draftStatus === 'inProgress' && isRunning) {
-            interval = setInterval(() => {
+            intervalRef.current = setInterval(() => {
                 setTimeRemaining((prevTime) => {
                     if (prevTime <= 1) {
-                        clearInterval(interval);
+                        clearInterval(intervalRef.current);
                         setIsRunning(false);
-                        draftSettings.onTimerEnd();
+                        onTimerEnd();
                         return 0;
                     }
                     return prevTime - 1;
                 });
             }, 1000);
-        } else  if (draftStatus === 'paused') {
-            clearInterval(interval);
-            // setIsRunning(false);
+        } else if (draftStatus === 'paused') {
+            clearInterval(intervalRef.current);
         }
 
-        return () => clearInterval(interval);
-    }, [draftStatus, draftSettings, isRunning]);
+        return () => clearInterval(intervalRef.current);
+    }, [draftStatus, isRunning, onTimerEnd]);
 
     useEffect(() => {
-        if (currentlyDrafting.teamId !== prevDrafterId) {
+        if (currentlyDrafting.teamId !== prevDrafterIdRef.current) {
             setTimeRemaining(draftSettings.pickTimerLength);
             setIsRunning(draftStatus === 'inProgress');
-            setPrevDrafterId(currentlyDrafting.teamId);
-        }
-    }, [currentlyDrafting, prevDrafterId, draftSettings.pickTimerLength, draftStatus]);
-
-    useEffect(() => {
-        if (draftStatus === 'inProgress') {
+            prevDrafterIdRef.current = currentlyDrafting.teamId;
+        } else if (draftStatus === 'inProgress') {
             setIsRunning(true);
         } else {
             setIsRunning(false);
         }
-    }, [draftStatus]);
+    }, [currentlyDrafting, draftSettings.pickTimerLength, draftStatus]);
 
     // Helper function to format timeRemaining into MM:SS format
     const formatTime = (time) => {
@@ -64,13 +55,9 @@ export const PickTimer = ({ draftStatus, currentlyDrafting}) => {
 
     const timerColor = timeRemaining <= 5 ? 'red' : 'yellow';
     const flashStyle = timeRemaining > 0 && timeRemaining <= 5 ? { animation: 'flash 1s steps(1, end) infinite' } : {};
-    // numbers blink at 10 seconds in color red, numbers flash and change at the same time
 
     return (
-        <Flex
-            direction='row'
-            gap='2'
-         >
+        <Flex direction='row' gap='2'>
             <Box
                 style={{
                     width: '100%',
@@ -91,15 +78,12 @@ export const PickTimer = ({ draftStatus, currentlyDrafting}) => {
                     100% { opacity: 1; }
                 }
             `}</style>
-
         </Flex>
-    )
-
-}
+    );
+};
 
 PickTimer.propTypes = {
     draftStatus: PropTypes.oneOf(['preDraft', 'inProgress', 'paused']).isRequired,
-    currentlyDrafting: PropTypes.shape({
-        teamId: PropTypes.string.isRequired,
-    }).isRequired,
+    currentlyDrafting: PropTypes.object.isRequired,
+    onTimerEnd: PropTypes.func.isRequired,
 };

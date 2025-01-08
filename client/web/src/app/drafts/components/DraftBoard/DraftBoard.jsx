@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useDraft } from '@/app/drafts/hooks/useDraft';
 import { DraftBoardGrid } from '../DraftBoardGrid';
 import { Button, Flex } from '@/components/ui';
@@ -20,7 +21,12 @@ export const DraftBoard = ({ draftData }) => {
     lastPlayerPicked,
     togglePlayersPanel,
     handleDraftPlayer,
+    autodraftPlayer,
   } = useDraft(draftData);
+
+  const memoizedAutodraftPlayer = useCallback(() => {
+    autodraftPlayer();
+  }, [autodraftPlayer]);
 
   if (!draftData) {
     return (
@@ -40,6 +46,8 @@ export const DraftBoard = ({ draftData }) => {
         teams={teams}
         prevTeam={prevTeam}
         lastPlayerPicked={lastPlayerPicked}
+        pickTimerLength={draftData.pickTimerLength}
+        onTimerEnd={memoizedAutodraftPlayer}
       />
       <Flex direction="column" gap="1">
         <DraftBoardGridHeader draftData={draftData} />
