@@ -12,6 +12,7 @@ export const useDraft = (draftData) => {
   const [draftResults, setDraftResults] = useState(draftData.results);
   const [prevTeam, setPrevTeam] = useState(null);
   const [lastPlayerPicked, setLastPlayerPicked] = useState(null);
+  const [isDrafting, setIsDrafting] = useState(false);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -52,6 +53,9 @@ export const useDraft = (draftData) => {
   };
 
   const handleDraftPlayer = async (playerId) => {
+    if (isDrafting) return;
+    setIsDrafting(true);
+
     try {
       const response = await api('/drafts/draftPlayer', {
         method: 'POST',
@@ -140,6 +144,8 @@ export const useDraft = (draftData) => {
       }
     } catch (error) {
       console.error('Error drafting player:', error);
+    } finally {
+      setIsDrafting(false);
     }
   };
 
@@ -163,6 +169,13 @@ export const useDraft = (draftData) => {
     
   };
 
+  const autodraftPlayer = () => {
+    if (playersData.length > 0) {
+      const randomPlayer = playersData[Math.floor(Math.random() * playersData.length)];
+      handleDraftPlayer(randomPlayer.playerId);
+    }
+  };
+
   useEffect(() => {
     updateDraftQueue(currentlyDrafting.teamId, currentlyDrafting.pick, currentlyDrafting.round);
   }, [currentlyDrafting, teams]);
@@ -180,5 +193,6 @@ export const useDraft = (draftData) => {
     lastPlayerPicked,
     togglePlayersPanel,
     handleDraftPlayer,
+    autodraftPlayer,
   };
 };
