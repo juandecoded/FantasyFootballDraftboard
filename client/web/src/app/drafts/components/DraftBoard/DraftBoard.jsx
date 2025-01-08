@@ -17,6 +17,7 @@ export const DraftBoard = ({ draftData }) => {
     teams,
     draftResults,
     prevTeam,
+    lastPlayerPicked,
     togglePlayersPanel,
     handleDraftPlayer,
   } = useDraft(draftData);
@@ -38,6 +39,7 @@ export const DraftBoard = ({ draftData }) => {
         draftQueue={draftQueue}
         teams={teams}
         prevTeam={prevTeam}
+        lastPlayerPicked={lastPlayerPicked}
       />
       <Flex direction="column" gap="1">
         <DraftBoardGridHeader draftData={draftData} />
