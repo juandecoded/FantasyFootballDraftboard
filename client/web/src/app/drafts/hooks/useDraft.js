@@ -11,6 +11,7 @@ export const useDraft = (draftData) => {
   const [teams, setTeams] = useState(draftData.teams);
   const [draftResults, setDraftResults] = useState(draftData.results);
   const [prevTeam, setPrevTeam] = useState(null);
+  const [lastPlayerPicked, setLastPlayerPicked] = useState(null);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -98,8 +99,10 @@ export const useDraft = (draftData) => {
           teamRoster.bench.push(draftedPlayer);
         }
 
+        setLastPlayerPicked(draftedPlayer);
         setTeams(updatedTeams);
         setPlayersData(playersData.filter((player) => player.playerId !== playerId));
+
 
         const currentRound = currentlyDrafting.round;
         const currentPick = currentlyDrafting.pick;
@@ -174,6 +177,7 @@ export const useDraft = (draftData) => {
     teams,
     draftResults,
     prevTeam,
+    lastPlayerPicked,
     togglePlayersPanel,
     handleDraftPlayer,
   };

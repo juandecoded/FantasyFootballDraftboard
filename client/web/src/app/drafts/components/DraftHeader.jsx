@@ -3,7 +3,7 @@ import { PickTimer } from './PickTimer';
 import { LastPlayerPickedCard } from './LastPlayerPickedCard';
 import PropTypes from 'prop-types';
 
-const DraftingInfo = ({ currentlyDrafting, currentTeam, prevTeam, draftStatus, teams}) => {
+const DraftingInfo = ({ currentlyDrafting, currentTeam, prevTeam, lastPlayerPicked, draftStatus, teams}) => {
     if (!currentlyDrafting || !currentTeam) {
         return null;
     }
@@ -33,7 +33,7 @@ const DraftingInfo = ({ currentlyDrafting, currentTeam, prevTeam, draftStatus, t
                         <Heading size='2' style={{ color: 'orange' }}>
                             With the {formatPickNumber(currentlyDrafting.overallPickNumber - 1)} pick, {prevTeamName} selects:
                         </Heading>
-                        <LastPlayerPickedCard playerId={currentlyDrafting.lastPlayerPicked} />
+                        <LastPlayerPickedCard player={lastPlayerPicked} />
                     </>
                 ) : null}
             </Flex>
@@ -79,7 +79,7 @@ const DraftQueue = ({ draftQueue }) => (
     </Flex>
 );
 
-export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams, prevTeam }) => {
+export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams, prevTeam, lastPlayerPicked }) => {
     const currentTeam = teams[currentlyDrafting.teamId];
 
     if (!currentlyDrafting || !currentTeam || !draftQueue) {
@@ -104,6 +104,7 @@ export const DraftHeader = ({ currentlyDrafting, draftQueue, draftStatus, teams,
                 draftStatus={draftStatus}
                 prevTeam={prevTeam}
                 teams={teams}
+                lastPlayerPicked={lastPlayerPicked}
             />
             <Flex gap='4'>
                 <Box>
@@ -129,6 +130,8 @@ DraftingInfo.propTypes = {
         teamName: PropTypes.string,
     }),
     draftStatus: PropTypes.oneOf(['preDraft', 'inProgress', 'paused']).isRequired,
+    prevTeam: PropTypes.string.isRequired,
+    lastPlayerPicked: PropTypes.object.isRequired,
 };
 
 DraftHeader.propTypes = {

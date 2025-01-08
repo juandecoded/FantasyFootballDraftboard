@@ -1,11 +1,9 @@
-import { Avatar, Box, Card, Flex, Heading, Text } from '@/components/ui';
+import { Card, Flex, Heading, Text } from '@/components/ui';
 import PropTypes from 'prop-types';
 
 import { players } from '@/app/drafts/players'; 
 
-
-export const LastPlayerPickedCard = ({ playerId }) => {
-  const player = players[playerId];
+export const LastPlayerPickedCard = ({ player }) => {
 
   if (!player) {
     return <Text>Player not found</Text>;
@@ -13,7 +11,6 @@ export const LastPlayerPickedCard = ({ playerId }) => {
 
   const { firstName, lastName, position, proTeam } = player;
 
-  // logic to determine the background color of the card and variables to hold the color
   const positionColors = {
     QB: 'red',
     RB: 'blue',
@@ -67,6 +64,3 @@ LastPlayerPickedCard.propTypes = {
     proTeam: PropTypes.string.isRequired,
   }).isRequired,
 };
-
-// tdl:
-// remove image background from all player profile images.
