@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDraft } from '@/app/drafts/hooks/useDraft';
 import { DraftBoardGrid } from '../DraftBoardGrid';
-import { Button, Flex } from '@/components/ui';
+import { Heading, Button, Flex } from '@/components/ui';
 import { DraftBoardGridHeader } from './DraftBoardGridHeader';
 import { Header } from './Header';
 import { DraftHeader } from '../../components/DraftHeader'; 
