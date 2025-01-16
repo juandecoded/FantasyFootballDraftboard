@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import Loading from './loading';
 import { api } from '@/utils/api';
+import { DraftProvider } from '@/app/drafts/context/DraftContext';
 
 const DraftBoard = dynamic(() => import('@/app/drafts/components/DraftBoard').then(mod => mod.DraftBoard), {
     suspense: true,
@@ -43,10 +44,28 @@ export const DraftPage = () => {
         return <Loading />;
     }
 
+    const initialState = {
+        draftData,
+        draftStatus: draftData.draftStatus,
+        currentlyDrafting: draftData.currentlyDrafting,
+        draftQueue: draftData.draftQueue,
+        playersData: [],
+        teams: draftData.teams,
+        draftResults: draftData.results,
+        prevTeam: null,
+        lastPlayerPicked: null,
+        isDrafting: false,
+        showPlayersPanel: true,
+        teamsArr: draftData.teamsArr,
+        rosterSettings: draftData.rosterSettings,
+    };
+
     return (
-        <Suspense fallback={<Loading />}>
-            <DraftBoard draftData={draftData}/>
-        </Suspense>
+        <DraftProvider initialState={initialState}>
+            <Suspense fallback={<Loading />}>
+                <DraftBoard draftData={draftData}/>
+            </Suspense>
+        </DraftProvider>
     );
 }
 

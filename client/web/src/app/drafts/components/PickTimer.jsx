@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 export const PickTimer = ({ draftStatus, currentlyDrafting, pickTimerLength, onTimerEnd }) => {
     const draftSettings = useMemo(() => ({
         pickTimerLength,
-    }), []);
+    }), [pickTimerLength]);
 
     const [timeRemaining, setTimeRemaining] = useState(draftSettings.pickTimerLength);
     const [isRunning, setIsRunning] = useState(false);
