@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export const useDraftQueue = (teamsArr, currentlyDrafting, teams) => {
   const [draftQueue, setDraftQueue] = useState({});
 
-  const getNextTeamId = (pickNumber, roundNumber) => {
+  const getNextTeamId = useCallback((pickNumber, roundNumber) => {
     const index = pickNumber - 1;
     const isEvenRound = roundNumber % 2 === 0;
     const adjustedIndex = isEvenRound ? teamsArr.length - 1 - index : index;
     return teamsArr[adjustedIndex]?.teamId;
-  };
+  }, [teamsArr]);
 
-  const updateDraftQueue = (nextTeamId, nextPick, nextRound) => {
+  const updateDraftQueue = useCallback((nextTeamId, nextPick, nextRound) => {
     const totalTeams = teamsArr.length;
 
     const onDeckPick = nextPick + 1 > totalTeams ? 1 : nextPick + 1;
@@ -27,11 +27,11 @@ export const useDraftQueue = (teamsArr, currentlyDrafting, teams) => {
       onDeck: teams[afterTeamId]?.teamName || 'Unknown Team',
       after: teams[getNextTeamId(afterPick + 1, afterRound)]?.teamName || 'Unknown Team',
     });
-  };
+  }, [teams, setDraftQueue, teamsArr, getNextTeamId]);
 
   useEffect(() => {
     updateDraftQueue(currentlyDrafting.teamId, currentlyDrafting.pick, currentlyDrafting.round);
-  }, [currentlyDrafting, teams]);
+  }, [currentlyDrafting, teams, updateDraftQueue]);
 
   return draftQueue;
 };

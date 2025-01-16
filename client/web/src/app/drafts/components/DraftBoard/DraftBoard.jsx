@@ -22,7 +22,7 @@ export const DraftBoard = ({ draftData }) => {
     togglePlayersPanel,
     handleDraftPlayer,
     autodraftPlayer,
-  } = useDraft(draftData);
+  } = useDraft();
 
   const memoizedAutodraftPlayer = useCallback(() => {
     autodraftPlayer();
