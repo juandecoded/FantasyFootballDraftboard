@@ -21,7 +21,6 @@ export const PickTimer = ({ draftStatus, currentlyDrafting, pickTimerLength, onT
                     if (prevTime <= 1) {
                         clearInterval(intervalRef.current);
                         setIsRunning(false);
-                        onTimerEnd();
                         return 0;
                     }
                     return prevTime - 1;
@@ -32,7 +31,14 @@ export const PickTimer = ({ draftStatus, currentlyDrafting, pickTimerLength, onT
         }
 
         return () => clearInterval(intervalRef.current);
-    }, [draftStatus, isRunning, onTimerEnd]);
+    }, [draftStatus, isRunning]);
+
+    useEffect(() => {
+        if (timeRemaining === 0) {
+            onTimerEnd();
+        }
+    }, [timeRemaining, onTimerEnd]);
+
 
     useEffect(() => {
         if (currentlyDrafting.teamId !== prevDrafterIdRef.current) {

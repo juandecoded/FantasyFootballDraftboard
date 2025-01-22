@@ -1,128 +1,56 @@
 import { useEffect, useCallback } from 'react';
-import { api } from '@/utils/api';
-import { useDraftState, useDraftDispatch} from '../context/DraftContext';
+import { useDraftState, useDraftDispatch } from '../context/DraftContext';
+import { fetchPlayers, draftPlayerApi } from '../api/draftApi';
+import { autodraftPlayer as handleAutodraftPlayer, getNextTeamId, processPlayerData, updateDraftQueue, updateTeamRoster, updateDraftResults, getNextPickDetails } from '../utils';
 
 export const useDraft = () => {
   const state = useDraftState();
   const dispatch = useDraftDispatch();
 
-  const {draftStatus, currentlyDrafting, draftQueue, playersData, teams, draftResults, prevTeam, lastPlayerPicked, isDrafting, showPlayersPanel, teamsArr, rosterSettings } = state
+  const { draftStatus, currentlyDrafting, draftQueue, playersData, teams, draftResults, prevTeam, lastPlayerPicked, isDrafting, showPlayersPanel, teamsArr, rosterSettings } = state;
 
   useEffect(() => {
-    const fetchPlayers = async () => {
+    const loadPlayers = async () => {
       try {
-        const response = await api('/players');
-        if (response.ok && response.json) {
-          const processedData = response.json.map(player => ({
-            playerId: player.id,
-            firstName: player.firstName,
-            lastName: player.lastName,
-            position: player.position,
-            proTeam: player.proTeam,
-            byeWeek: player.byeWeek,
-            draftStatus: player.draftStatus,
-            fantasyTeam: player.fantasyTeam,
-          }));
-          dispatch({type: 'SET_PLAYERS_DATA', payload: processedData});
-        } else {
-          console.error('Error fetching players:', response.statusText);
-        }
+        const players = await fetchPlayers();
+        const processedPlayers = processPlayerData(players);
+        dispatch({ type: 'SET_PLAYERS_DATA', payload: processedPlayers });
       } catch (error) {
         console.error('Error fetching players:', error);
       }
     };
-
-    fetchPlayers();
+    loadPlayers();
   }, [dispatch]);
-
-  const togglePlayersPanel = () => {
-    dispatch({ type: 'SET_SHOW_PLAYERS_PANEL', payload: !state.showPlayersPanel });
-  };
-
-  const getNextTeamId = (pickNumber, roundNumber) => {
-    const index = pickNumber - 1;
-    const isEvenRound = roundNumber % 2 === 0;
-    const adjustedIndex = isEvenRound ? teamsArr.length - 1 - index : index;
-    return teamsArr[adjustedIndex]?.teamId;
-  };
 
   const handleDraftPlayer = async (playerId) => {
     if (isDrafting) return;
     dispatch({ type: 'SET_IS_DRAFTING', payload: true });
 
     try {
-      const response = await api('/drafts/draftPlayer', {
-        method: 'POST',
-        body: {
-          draftId: state.draftData.draftId,
-          teamId: currentlyDrafting.teamId,
-          playerId,
-          pickNumber: currentlyDrafting.overallPickNumber,
-        },
-      });
+      const response = await draftPlayerApi(state.draftData.draftId, currentlyDrafting.teamId, playerId, currentlyDrafting.overallPickNumber);
+      console.log('handleDraftPlayer response:', response);
 
-      if (response.ok) {
-        // Update the frontend state based on the response
         const draftedPlayer = playersData.find((player) => player.playerId === playerId);
         draftedPlayer.draftStatus = 'drafted';
         draftedPlayer.fantasyTeam = currentlyDrafting.teamId;
 
         const updatedTeams = { ...teams };
-        const teamRoster = updatedTeams[currentlyDrafting.teamId].roster;
-        const position = draftedPlayer.position.toLowerCase();
-        const positionCount = rosterSettings.positions[position] || 0;
-
-        let assigned = false;
-        for (let i = 1; i <= positionCount; i++) {
-          const posKey = `${position}${i}`;
-          if (!teamRoster[posKey]) {
-            teamRoster[posKey] = draftedPlayer;
-            assigned = true;
-            break;
-          }
-        }
-
-        if (!assigned && rosterSettings.positions.flex) {
-          for (let i = 1; i <= rosterSettings.positions.flex; i++) {
-            const posKey = `flex${i}`;
-            if (!teamRoster[posKey]) {
-              teamRoster[posKey] = draftedPlayer;
-              assigned = true;
-              break;
-            }
-          }
-        }
-
-        if (!assigned) {
-          teamRoster.bench.push(draftedPlayer);
-        }
+        const teamRoster = updateTeamRoster(updatedTeams[currentlyDrafting.teamId].roster, draftedPlayer, rosterSettings);
 
         dispatch({ type: 'SET_LAST_PLAYER_PICKED', payload: draftedPlayer });
         dispatch({ type: 'SET_TEAMS', payload: updatedTeams });
         dispatch({ type: 'SET_PLAYERS_DATA', payload: playersData.filter((player) => player.playerId !== playerId) });
 
-
         const currentRound = currentlyDrafting.round;
         const currentPick = currentlyDrafting.pick;
-        const updatedDraftResults = { ...draftResults };
+        const updatedDraftResults = updateDraftResults(draftResults, currentRound, currentPick, draftedPlayer);
 
-        if (!updatedDraftResults.rounds[currentRound]) {
-          updatedDraftResults.rounds[currentRound] = {};
-        }
-        updatedDraftResults.rounds[currentRound][currentPick] = draftedPlayer;
         dispatch({ type: 'SET_DRAFT_RESULTS', payload: updatedDraftResults });
 
         const totalTeams = state.teamsArr.length;
-        let nextPick = currentPick + 1;
-        let nextRound = currentRound;
-        let nextOverallPickNumber = currentlyDrafting.overallPickNumber + 1;
+        const { nextPick, nextRound, nextOverallPickNumber } = getNextPickDetails(currentPick, currentRound, currentlyDrafting.overallPickNumber, totalTeams);
 
-        if (nextPick > totalTeams) {
-          nextRound += 1;
-          nextPick = 1;
-        }
-
-        const nextTeamId = getNextTeamId(nextPick, nextRound);
+        const nextTeamId = getNextTeamId(nextPick, nextRound, teamsArr);
 
         dispatch({ type: 'SET_PREV_TEAM', payload: currentlyDrafting.teamId });
 
@@ -137,8 +65,8 @@ export const useDraft = () => {
           },
         });
 
-        updateDraftQueue(nextTeamId, nextPick, nextRound);
-      }
+        const newDraftQueue = updateDraftQueue(nextTeamId, nextPick, nextRound, teamsArr, teams, getNextTeamId);
+        dispatch({ type: 'SET_DRAFT_QUEUE', payload: newDraftQueue });
     } catch (error) {
       console.error('Error drafting player:', error);
     } finally {
@@ -146,38 +74,16 @@ export const useDraft = () => {
     }
   };
 
-  const updateDraftQueue = useCallback((nextTeamId, nextPick, nextRound) => {
-    const totalTeams = teamsArr.length;
-
-    const onDeckPick = nextPick + 1 > totalTeams ? 1 : nextPick + 1;
-    const onDeckRound = nextPick + 1 > totalTeams ? nextRound + 1 : nextRound;
-    const onDeckTeamId = getNextTeamId(onDeckPick, onDeckRound);
-
-    const afterPick = onDeckPick + 1 > totalTeams ? 1 : onDeckPick + 1;
-    const afterRound = onDeckPick + 1 > totalTeams ? onDeckRound + 1 : onDeckRound;
-    const afterTeamId = getNextTeamId(afterPick, afterRound);
-
-    dispatch({
-      type: 'SET_DRAFT_QUEUE',
-      payload: {
-        currentTeamName: teams[nextTeamId]?.teamName || 'Unknown Team',
-        upNext: teams[onDeckTeamId]?.teamName || 'Unknown Team',
-        onDeck: teams[afterTeamId]?.teamName || 'Unknown Team',
-        after: teams[getNextTeamId(afterPick + 1, afterRound)]?.teamName || 'Unknown Team',
-      },
-    });
-  }, [teams, dispatch]);
-
-  const autodraftPlayer = () => {
-    if (playersData.length > 0) {
-      const randomPlayer = playersData[Math.floor(Math.random() * playersData.length)];
-      handleDraftPlayer(randomPlayer.playerId);
-    }
+  const togglePlayersPanel = () => {
+    dispatch({ type: 'SET_SHOW_PLAYERS_PANEL', payload: !showPlayersPanel });
   };
 
+  const autodraftPlayer = ()=> {handleAutodraftPlayer(playersData, handleDraftPlayer)};
+
   useEffect(() => {
-    updateDraftQueue(currentlyDrafting.teamId, currentlyDrafting.pick, currentlyDrafting.round);
-  }, [currentlyDrafting, teams, updateDraftQueue]);
+    const newDraftQueue = updateDraftQueue(currentlyDrafting.teamId, currentlyDrafting.pick, currentlyDrafting.round, teamsArr, teams, getNextTeamId);
+    dispatch({ type: 'SET_DRAFT_QUEUE', payload: newDraftQueue });
+  }, [currentlyDrafting, teams, dispatch, teamsArr]); 
 
   return {
     draftStatus,
