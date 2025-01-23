@@ -8,13 +8,12 @@ export const fetchDraftData = async (draftId) => {
   return response.json;
 };
 
-export const fetchPlayers = async () => {
-  const response = await api('/players');
+export const fetchPlayers = async (page = 1, limit = 25) => {
+  const response = await api(`/players?page=${page}&limit=${limit}`);
 
   if (response.ok && response.json) {
     return response.json;
-  }
-  else {
+  } else {
     throw new Error('Error fetching players', response.statusText);
   }
 };
