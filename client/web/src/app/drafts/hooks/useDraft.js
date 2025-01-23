@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useDraftState, useDraftDispatch } from '../context/DraftContext';
 import { fetchPlayers, draftPlayerApi } from '../api/draftApi';
 import { autodraftPlayer as handleAutodraftPlayer, getNextTeamId, processPlayerData, updateDraftQueue, updateTeamRoster, updateDraftResults, getNextPickDetails } from '../utils';
@@ -6,13 +6,14 @@ import { autodraftPlayer as handleAutodraftPlayer, getNextTeamId, processPlayerD
 export const useDraft = () => {
   const state = useDraftState();
   const dispatch = useDraftDispatch();
+  const [page, setPage] = useState(1);
 
   const { draftStatus, currentlyDrafting, draftQueue, playersData, teams, draftResults, prevTeam, lastPlayerPicked, isDrafting, showPlayersPanel, teamsArr, rosterSettings } = state;
 
   useEffect(() => {
     const loadPlayers = async () => {
       try {
-        const players = await fetchPlayers();
+        const players = await fetchPlayers(page);
         const processedPlayers = processPlayerData(players);
         dispatch({ type: 'SET_PLAYERS_DATA', payload: processedPlayers });
       } catch (error) {
@@ -20,7 +21,7 @@ export const useDraft = () => {
       }
     };
     loadPlayers();
-  }, [dispatch]);
+  }, [dispatch, page]);
 
   const handleDraftPlayer = async (playerId) => {
     if (isDrafting) return;
@@ -78,6 +79,10 @@ export const useDraft = () => {
     dispatch({ type: 'SET_SHOW_PLAYERS_PANEL', payload: !showPlayersPanel });
   };
 
+  const loadMorePlayers = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+
   const autodraftPlayer = ()=> {handleAutodraftPlayer(playersData, handleDraftPlayer)};
 
   useEffect(() => {
@@ -96,6 +101,7 @@ export const useDraft = () => {
     draftResults,
     prevTeam,
     lastPlayerPicked,
+    loadMorePlayers,
     togglePlayersPanel,
     handleDraftPlayer,
     autodraftPlayer,
