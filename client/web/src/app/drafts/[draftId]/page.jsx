@@ -12,7 +12,7 @@ const DraftBoard = dynamic(() => import('@/app/drafts/components/DraftBoard').th
     loading: () => <Loading />,
 });
 
-export const DraftPage = () => {
+const DraftPage = () => {
     const params = useParams();
     const draftId = params.draftId;
     const [draftData, setDraftData] = useState(null);
